@@ -25,7 +25,7 @@ kotlin {
 
     findByName("jsMain")?.apply {
       dependencies {
-        implementation(golatac.lib("kotlinx.nodejs"))
+//        implementation(golatac.lib("kotlinx.nodejs"))
       }
     }
     findByName("appleMain")?.apply {

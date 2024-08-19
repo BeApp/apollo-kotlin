@@ -24,13 +24,13 @@ listOf(pluginManagement.repositories, dependencyResolutionManagement.repositorie
       }
     }
 
-    exclusiveContent {
-      @Suppress("DEPRECATION")
-      forRepository(::jcenter)
-      filter {
-        // https://github.com/Kotlin/kotlinx-nodejs/issues/16
-        includeModule("org.jetbrains.kotlinx", "kotlinx-nodejs")
-      }
-    }
+//    exclusiveContent {
+//      @Suppress("DEPRECATION")
+//      forRepository(::jcenter)
+//      filter {
+//        // https://github.com/Kotlin/kotlinx-nodejs/issues/16
+//        includeModule("org.jetbrains.kotlinx", "kotlinx-nodejs")
+//      }
+//    }
   }
 }
