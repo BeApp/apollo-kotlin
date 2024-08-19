@@ -125,7 +125,7 @@ fun Project.configureMpp(
 fun Project.okio(): String {
   val okioVersion = when (getKotlinPluginVersion()) {
     "1.6.10" -> "3.0.0"
-    else -> "3.2.0"
+    else -> "3.9.0"
   }
 
   return "com.squareup.okio:okio:$okioVersion"
@@ -134,7 +134,7 @@ fun Project.okio(): String {
 fun Project.okioNodeJs(): String {
   val okioVersion = when (getKotlinPluginVersion()) {
     "1.6.10" -> "3.0.0"
-    else -> "3.2.0"
+    else -> "3.9.0"
   }
 
   return "com.squareup.okio:okio-nodefilesystem:$okioVersion"
@@ -142,12 +142,6 @@ fun Project.okioNodeJs(): String {
 
 private fun KotlinMultiplatformExtension.createAndConfigureAppleTargets(presetNames: Collection<String>) {
   if (presetNames.isEmpty()) {
-    return
-  }
-
-  if (System.getProperty("idea.sync.active") != null) {
-    // Early return. Inside intelliJ, only configure one target
-    targetFromPreset(presets.getByName(hostTarget), "apple")
     return
   }
 

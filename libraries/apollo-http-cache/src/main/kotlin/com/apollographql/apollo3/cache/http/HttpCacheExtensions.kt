@@ -26,7 +26,9 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
+import okio.FileSystem
 import java.io.File
+import java.io.IOException
 
 enum class HttpFetchPolicy {
   /**
@@ -72,10 +74,16 @@ fun ApolloClient.Builder.httpCache(
     directory: File,
     maxSize: Long,
 ): ApolloClient.Builder {
-  val cachingHttpInterceptor = CachingHttpInterceptor(
-      directory = directory,
-      maxSize = maxSize,
-  )
+  return httpCache(DiskLruHttpCache(FileSystem.SYSTEM, directory, maxSize))
+}
+
+@JvmName("configureApolloClientBuilder")
+@Suppress("DEPRECATION")
+fun ApolloClient.Builder.httpCache(
+    apolloHttpCache: ApolloHttpCache,
+): ApolloClient.Builder {
+  val cachingHttpInterceptor = CachingHttpInterceptor(apolloHttpCache)
+
   val apolloRequestToCacheKey = mutableMapOf<String, String>()
   return addHttpInterceptor(object : HttpInterceptor {
     override suspend fun intercept(request: HttpRequest, chain: HttpInterceptorChain): HttpResponse {
@@ -123,13 +131,19 @@ fun ApolloClient.Builder.httpCache(
               catch { throwable ->
                 // Revert caching of responses with errors
                 val cacheKey = synchronized(apolloRequestToCacheKey) { apolloRequestToCacheKey[request.requestUuid.toString()] }
-                cacheKey?.let { cachingHttpInterceptor.cache.remove(it) }
+                try {
+                  cacheKey?.let { cachingHttpInterceptor.cache.remove(it) }
+                } catch (_: IOException) {
+                }
                 throw throwable
               }.onEach { response ->
                 // Revert caching of responses with errors
                 val cacheKey = synchronized(apolloRequestToCacheKey) { apolloRequestToCacheKey[request.requestUuid.toString()] }
                 if (response.hasErrors()) {
-                  cacheKey?.let { cachingHttpInterceptor.cache.remove(it) }
+                  try {
+                    cacheKey?.let { cachingHttpInterceptor.cache.remove(it) }
+                  } catch (_: IOException) {
+                  }
                 }
               }.onCompletion {
                 synchronized(apolloRequestToCacheKey) { apolloRequestToCacheKey.remove(request.requestUuid.toString()) }
@@ -150,6 +164,7 @@ private fun defaultPolicy(operation: Operation<*>): HttpFetchPolicy {
   }
 }
 
+@Suppress("DEPRECATION")
 val <D : Operation.Data> ApolloResponse<D>.isFromHttpCache
   get() = executionContext[HttpInfo]?.headers?.any {
     // This will return true whatever the value in the header. We might want to fine tune this
@@ -166,6 +181,7 @@ fun <T> MutableExecutionOptions<T>.httpFetchPolicy(httpFetchPolicy: HttpFetchPol
 /**
  * Configures httpExpireTimeout. Entries will be removed from the cache after this timeout.
  */
+@Suppress("DEPRECATION")
 fun <T> MutableExecutionOptions<T>.httpExpireTimeout(httpExpireTimeout: Long) = addHttpHeader(
     CachingHttpInterceptor.CACHE_EXPIRE_TIMEOUT_HEADER, httpExpireTimeout.toString()
 )
@@ -173,6 +189,7 @@ fun <T> MutableExecutionOptions<T>.httpExpireTimeout(httpExpireTimeout: Long) = 
 /**
  * Configures httpExpireAfterRead. Entries will be removed from the cache after read if set to true.
  */
+@Suppress("DEPRECATION")
 fun <T> MutableExecutionOptions<T>.httpExpireAfterRead(httpExpireAfterRead: Boolean) = addHttpHeader(
     CachingHttpInterceptor.CACHE_EXPIRE_AFTER_READ_HEADER, httpExpireAfterRead.toString()
 )
@@ -180,6 +197,7 @@ fun <T> MutableExecutionOptions<T>.httpExpireAfterRead(httpExpireAfterRead: Bool
 /**
  * Configures httpDoNotStore. Entries will never be stored if set to true.
  */
+@Suppress("DEPRECATION")
 fun <T> MutableExecutionOptions<T>.httpDoNotStore(httpDoNotStore: Boolean) = addHttpHeader(
     CachingHttpInterceptor.CACHE_DO_NOT_STORE, httpDoNotStore.toString()
 )

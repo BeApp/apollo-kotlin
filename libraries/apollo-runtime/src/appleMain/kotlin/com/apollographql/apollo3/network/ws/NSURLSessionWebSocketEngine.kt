@@ -5,6 +5,16 @@ import com.apollographql.apollo3.annotations.ApolloDeprecatedSince.Version.v3_2_
 import com.apollographql.apollo3.api.http.HttpHeader
 import okio.ByteString
 import platform.Foundation.NSError
+import platform.Foundation.NSURLSessionWebSocketCloseCode
+import platform.Foundation.NSURLSessionWebSocketTask
+
+interface WebSocketConnectionListener {
+  fun onOpen(webSocket: NSURLSessionWebSocketTask)
+
+  fun onClose(webSocket: NSURLSessionWebSocketTask, code: NSURLSessionWebSocketCloseCode)
+
+  fun onError(error: NSError?)
+}
 
 
 actual class DefaultWebSocketEngine : WebSocketEngine {

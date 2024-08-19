@@ -11,7 +11,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: macos-11
+    runs-on: macos-latest
     if: github.repository == 'apollographql/apollo-kotlin'
     steps:
       - uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28 #v3
@@ -43,9 +43,4 @@ jobs:
         if: always()
         with:
           name: push.zip
-          path: push.zip
-      - name: Deploy Kdoc to github pages
-        uses: JamesIves/github-pages-deploy-action@830e6a4f7c81743c52f3fed0ac67428feff9620a #v4.2.5
-        with:
-          branch: gh-pages # The branch the action should deploy to.
-          folder: build/dokkaHtml # The folder the action should deploy.
+          path: diagnostics.zip
